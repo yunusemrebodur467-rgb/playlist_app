@@ -245,6 +245,35 @@
 var MOOD_AD = {};
 var BEGENILER = {tracks: [], moods: {}};
 var seciliMood = null;
+var DEMO_MODU = false;
+
+/* Yayındaki (GitHub Pages) statik demosunda API yok; örnek veriyle dolu görünüm. */
+var DEMO_TRACKS = [
+  {provider:"spotify", id:"2tni0FShSW5lPlCGyhy6xR", name:"GEL GEL GEL", artist:"BLOK3", album:"Yeraltı", image:"", url:"https://open.spotify.com/track/2tni0FShSW5lPlCGyhy6xR", tempo:118, energy:0.82, danceability:0.78, mood:"spor"},
+  {provider:"spotify", id:"3nQH8LOpPZQxSXsThK3dR2", name:"KAYIP PERSONA", artist:"BLOK3", album:"KAYIP", image:"", url:"https://open.spotify.com/track/3nQH8LOpPZQxSXsThK3dR2", tempo:96, energy:0.6, danceability:0.7, mood:"eglen"},
+  {provider:"youtube", id:"kJQP7kiw5Fk", name:"Blinding Lights", artist:"The Weeknd", image:"", url:"https://music.youtube.com/watch?v=kJQP7kiw5Fk", tempo:171, energy:0.77, danceability:0.69, mood:"calisma"},
+  {provider:"spotify", id:"4uLU6hMCjMI75M1A2tKUQC", name:"Circles", artist:"Post Malone", album:"Hollywood's Bleeding", image:"", url:"https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC", tempo:120, energy:0.55, danceability:0.73, mood:"chill"},
+  {provider:"youtube", id:"RgKAFK5djSk", name:"See You Again", artist:"Wiz Khalifa", image:"", url:"https://music.youtube.com/watch?v=RgKAFK5djSk", tempo:80, energy:0.45, danceability:0.6, mood:"uyku"}
+];
+function demoYukle(){
+  DEMO_MODU = true;
+  var moods = {};
+  DEMO_TRACKS.forEach(function(p){ var m = p.mood || "karisik"; moods[m] = moods[m] || {mood:m, count:0}; moods[m].count++; });
+  BEGENILER = {tracks: DEMO_TRACKS, moods: moods};
+  var kop = document.getElementById("kopruDurum");
+  if(kop) kop.innerHTML = '<span class="nokta" style="background:#fdcb6e"></span>📄 Demo modu — yayında statik arayüz; yerelde çalıştırırsan canlı veri gelir';
+}
+function demoKesfet(){
+  DEMO_MODU = true;
+  document.getElementById("kesfetDurum").textContent = "📄 Demo modu — örnek pop parçaları.";
+  document.getElementById("kesfetListe").innerHTML = DEMO_TRACKS.map(kart).join("");
+}
+function apiGet(url){
+  return fetch(url).then(function(r){
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  });
+}
 
 /* ================= Bağlantı durumu ================= */
 function durumGuncelle(d){
@@ -349,7 +378,7 @@ function cerezGonder(){
   }).then(function(r){ return r.json(); }).then(function(d){
     if(d.ok){ cerezModalGizle(); begendikleriniYukle(); document.getElementById("durum").textContent = "✅ YouTube Music çerezle bağlandı."; }
     else { dur.textContent = "⚠ " + (d.error || "Bağlanamadı"); }
-  }).catch(function(e){ dur.textContent = "Hata: " + e.message; });
+  }).catch(function(e){ dur.textContent = DEMO_MODU ? "Demo" : ("Hata: " + e.message); });
 }
 function spCerezModalGoster(){
   document.getElementById("spCerezModal").classList.remove("gizli");
@@ -399,14 +428,14 @@ function kopyala(){
 function begendikleriniYukle(){
   var durum = document.getElementById("durum");
   durum.textContent = "♥ Beğeniler getiriliyor...";
-  fetch("/api/liked").then(function(r){ return r.json(); }).then(function(d){
+  apiGet("/api/liked").then(function(d){
     BEGENILER = d;
     var toplam = d.tracks.length;
     durum.textContent = toplam === 0
       ? "Beğeni bulunamadı — bir servise bağlan veya Spotify/YT Music'te şarkı beğen."
       : "♥ " + toplam + " beğenilen şarkı, " + Object.keys(d.moods).length + " mood'a kümelendi.";
     moodCipleriGoster();
-  }).catch(function(e){ durum.textContent = "Hata: " + e.message; });
+  }).catch(function(e){ durum.textContent = "Hata: " + e.message; demoYukle(); moodCipleriGoster(); });
 }
 function moodCipleriGoster(){
   var kapsa = document.getElementById("moodlar");
@@ -455,12 +484,12 @@ function kesfetYukle(mood){
   var durum = document.getElementById("kesfetDurum");
   durum.textContent = "🔍 Pop parçalar aranıyor...";
   document.getElementById("kesfetListe").innerHTML = '<div class="bos-kutu" style="grid-column:1/-1">Yükleniyor...</div>';
-  fetch("/api/playlist?mood=" + mood).then(function(r){ return r.json(); }).then(function(d){
+  apiGet("/api/playlist?mood=" + mood).then(function(d){
     durum.textContent = d.demo
       ? "⚠ Canlı Spotify verisi yok (demo listesi). config.json kontrol edin."
       : "✓ " + d.total + " parça bulundu.";
     document.getElementById("kesfetListe").innerHTML = d.tracks.map(kart).join("");
-  }).catch(function(e){ durum.textContent = "Hata: " + e.message; });
+  }).catch(function(e){ durum.textContent = "Hata: " + e.message; demoKesfet(); });
 }
 
 /* ================= Kart ================= */
