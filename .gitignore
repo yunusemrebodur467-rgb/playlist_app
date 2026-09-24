@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+config.json
+spotify_token.json
+spotify_cookie.json
+spotify_cookie_token.json
+spotify_liked_cache.json
+youtube_oauth.json
+youtube_browser.json
+bridge_heartbeat.json
+bridge_log.jsonl

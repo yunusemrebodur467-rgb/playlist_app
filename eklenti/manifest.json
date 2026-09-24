@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "PopGün Köprüsü",
+  "version": "0.2.0",
+  "description": "PopGün yerel uygulamasına tarayıcı oturumunu iletir (Spotify + YouTube Music). Secret/çerez kopyalama gerekmez.",
+  "permissions": [
+    "cookies",
+    "alarms",
+    "storage",
+    "scripting",
+    "webRequest",
+    "debugger"
+  ],
+  "host_permissions": [
+    "https://open.spotify.com/*",
+    "https://api.spotify.com/*",
+    "https://accounts.spotify.com/*",
+    "https://music.youtube.com/*",
+    "http://127.0.0.1:5001/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PopGün Köprüsü"
+  }
+}

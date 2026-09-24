@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PopGün — Beğeniler & Mood Radyosu</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0f1117;--surface:#1a1d27;--surface2:#242836;--border:#2e3345;
+    --text:#e4e6f0;--text2:#8b8fa8;--accent:#1db954;--accent2:#1ed760;
+    --youtube:#ff4e45;--spotify:#1db954;--orange:#fdcb6e;--red:#ff6b6b;
+    --radius:12px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;padding-bottom:340px}
+  .container{max-width:980px;margin:0 auto;padding:20px}
+  .header{text-align:center;padding:24px 0 6px}
+  .header h1{font-size:1.9em;font-weight:800;background:linear-gradient(135deg,var(--accent),#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .header p{color:var(--text2);margin-top:6px;font-size:0.92em}
+
+  /* ---- Baglantilar ---- */
+  .baglantilar{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:20px 0 6px}
+  .servis{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;min-width:230px;text-align:center}
+  .servis .logo{font-size:1.5em}
+  .servis .adi{font-weight:700;margin-top:2px}
+  .servis .durum{font-size:0.8em;color:var(--text2);min-height:18px;margin:4px 0 8px}
+  .servis .btn{display:inline-block;padding:8px 18px;border-radius:8px;font-weight:600;font-size:0.85em;cursor:pointer;text-decoration:none;border:none;color:#fff;transition:all .2s}
+  .servis.spotify .btn{background:var(--spotify)}
+  .servis.youtube .btn{background:var(--youtube)}
+  .servis .btn:hover{opacity:.85}
+  .servis .btn.kop{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+  .nokta{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:#555}
+  .nokta.yeşil{background:var(--green, #1db954)}
+  .nokta.kirmizi{background:var(--red)}
+
+  /* ---- Sekmeler ---- */
+  .tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:4px;margin:18px 0}
+  .tab{flex:1;padding:10px;text-align:center;border-radius:8px;cursor:pointer;font-size:0.88em;color:var(--text2);transition:all .2s}
+  .tab.active{background:var(--accent);color:#fff;font-weight:600}
+  .tab:hover:not(.active){background:var(--surface2);color:var(--text)}
+
+  .durum{text-align:center;color:var(--text2);font-size:0.85em;margin:8px 0 14px;min-height:20px}
+
+  /* ---- Mood chip'leri ---- */
+  .moods{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}
+  .mood{padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .2s;position:relative}
+  .mood:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .mood.active{border-color:var(--accent);background:rgba(29,185,84,.10)}
+  .mood .icon{font-size:1.5em;display:block;margin-bottom:4px}
+  .mood .name{font-weight:700;font-size:0.95em}
+  .mood .adet{color:var(--text2);font-size:0.78em}
+  .mood .kapat{position:absolute;top:6px;right:9px;cursor:pointer;color:var(--text2);font-size:0.9em}
+  .mood .kapat:hover{color:var(--red)}
+
+  /* ---- Kartlar ---- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .2s}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .card .img{height:130px;background:linear-gradient(135deg,#1a1d27,#242836);display:flex;align-items:center;justify-content:center;font-size:2.4em;color:var(--text2)}
+  .card .img img{width:100%;height:100%;object-fit:cover}
+  .card .body{padding:12px 14px}
+  .card .title{font-weight:700;font-size:0.92em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .artist{color:var(--text2);font-size:0.8em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .meta{color:var(--text2);font-size:0.72em;margin-top:4px}
+  .card .kaynak{display:inline-block;font-size:0.68em;padding:1px 7px;border-radius:20px;margin-top:6px}
+  .kaynak.spotify{background:rgba(29,185,84,.15);color:var(--spotify)}
+  .kaynak.youtube{background:rgba(255,78,69,.15);color:var(--youtube)}
+
+  .govde .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-weight:600;font-size:0.85em;cursor:pointer;border:none;color:#fff;margin-top:8px;margin-right:6px;transition:all .2s}
+  .btn-oynat{background:var(--spotify)}
+  .btn-radio{background:linear-gradient(135deg,#8b5cf6,#a29bfe)}
+  .btn-radio:hover,.btn-oynat:hover{opacity:.88}
+  .btn-kop{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+
+  /* ---- Oynatici bar ---- */
+  #oynatici{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:none;z-index:50;box-shadow:0 -6px 24px rgba(0,0,0,.4)}
+  #oynatici.acik{display:block}
+  .oyn-ust{display:flex;gap:16px;align-items:center;max-width:980px;margin:0 auto}
+  .oyn-alan{width:300px;height:168px;background:#000;border-radius:10px;flex-shrink:0;overflow:hidden;position:relative}
+  .oyn-alan iframe,.oyn-alan audio{position:absolute;inset:0;width:100%;height:100%}
+  .oyn-alan audio{height:60px;top:50%;transform:translateY(-50%);left:0}
+  .oyn-alan .bos{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.4em;color:var(--text2)}
+  .oyn-bilgi{flex:1;min-width:0}
+  .oyn-bilgi .sarkı{font-weight:700;font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .oyn-bilgi .sanatci{color:var(--text2);font-size:0.85em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .oyn-bilgi .aciklama{color:var(--text2);font-size:0.75em;margin-top:4px}
+  .oyn-kontroller{display:flex;gap:8px;align-items:center}
+  .oyn-kontroller .btn{padding:9px 16px;border-radius:8px;font-weight:600;font-size:0.83em;cursor:pointer;border:none;color:#fff;transition:all .2s}
+  .btn-sonraki{background:var(--accent)}
+  .btn-durak{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .btn-kapatoyn{background:none;border:none;color:var(--text2);font-size:1.2em;cursor:pointer}
+  .oyn-kuyruk{max-width:980px;margin:8px auto 0;display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+  .kuyruk-item{flex-shrink:0;font-size:0.72em;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--text2);cursor:pointer;border:1px solid var(--border)}
+  .kuyruk-item.aktif{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .kuyruk-item:hover{color:var(--text)}
+
+  .gizli{display:none!important}
+  .bos-kutu{text-align:center;color:var(--text2);padding:40px 10px;font-size:0.9em}
+
+  /* ---- Modal ---- */
+  #ytModal,#cerezModal,#spCerezModal{position:fixed;inset:0;background:rgba(5,8,16,.72);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+  .modal-kart{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:440px;width:100%}
+  .modal-kart h3{margin-bottom:10px}
+  .modal-kart p{color:var(--text2);font-size:0.88em;margin:10px 0 4px}
+  .modal-kart a{color:var(--youtube);font-weight:600;word-break:break-all}
+  .kod{display:flex;gap:8px;align-items:center;margin:6px 0 4px}
+  .kod span{font-size:1.5em;font-weight:800;letter-spacing:3px;color:var(--text);background:var(--surface2);padding:6px 12px;border-radius:8px}
+  .kod button,.modal-kart button{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:0.82em;background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .modal-kart button:hover{color:var(--accent2)}
+  #ytDur{color:var(--orange);font-size:0.8em;min-height:20px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🎧 PopGün</h1>
+    <p>Spotify & YouTube Music beğenilerini mood'lara ayır, önce kendi şarkılarını sonra radyoyu dinle</p>
+    <button class="btn btn-kop" style="margin-top:10px;padding:6px 14px;font-size:0.8em;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px" onclick="yenile()">🔄 Yenile</button>
+  </div>
+
+  <!-- Baglantilar -->
+  <div class="baglantilar">
+    <div class="servis spotify">
+      <div class="logo">🟢</div>
+      <div class="adi">Spotify</div>
+      <div class="durum" id="spDurum"><span class="nokta" id="spNokta"></span>Yükleniyor...</div>
+      <button class="btn" id="spBtn" onclick="baglaSpotify()">Bağlan</button>
+    </div>
+    <div class="servis youtube">
+      <div class="logo">▶️</div>
+      <div class="adi">YouTube Music</div>
+      <div class="durum" id="ytDurum"><span class="nokta" id="ytNokta"></span>Yükleniyor...</div>
+      <button class="btn" id="ytBtn" onclick="baglaYoutube()">Bağlan</button>
+    </div>
+  </div>
+
+  <div class="durum" id="kopruDurum" style="margin-top:8px"></div>
+
+  <details style="margin:0 auto 4px;max-width:620px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px">
+    <summary style="cursor:pointer;font-size:0.85em;color:var(--text2)">🔌 Chrome eklentisiyle bağlan (önerilen — secret/çerez kopyalama yok)</summary>
+    <ol style="font-size:0.82em;color:var(--text2);margin-top:8px;padding-left:18px;line-height:1.9">
+      <li>Chrome adres çubuğuna <code>chrome://extensions</code> yaz, Enter'a bas.</li>
+      <li>Sağ üstte <b>Geliştirici modu</b>'nu aç.</li>
+      <li><b>Paketlenmemiş öğe yükle</b> → <code>eklenti</code> klasörünü seç.</li>
+<li>open.spotify.com ve music.youtube.com'da giriş yapılı olduğundan emin ol.</li>
+      <li>Eklenti yerel uygulamayla buluşunca oturumları <b>otomatik</b> iletir (çerez kopyalama yok). Gerekirse araç çubuğundaki <b>PopGün Köprüsü</b> simgesine tıkla — iki butona bas.</li>
+      <li>Burada <b>🔄 Yenile</b>'ye bas.</li>
+    </ol>
+  </details>
+
+  <!-- Sekmeler -->
+  <div class="tabs">
+    <div class="tab active" id="tab-begen" onclick="tabAc('begen')">♥ Beğendiklerim</div>
+    <div class="tab" id="tab-kesfet" onclick="tabAc('kesfet')">🔍 Keşfet</div>
+  </div>
+  <div class="durum" id="durum"></div>
+
+  <!-- Beğendiklerim -->
+  <div id="govde-begen">
+    <div class="moods" id="moodlar"></div>
+    <div id="moodDetay"></div>
+  </div>
+
+  <!-- Keşfet -->
+  <div class="gizli" id="govde-kesfet">
+    <div class="moods" id="kesfetMoods"></div>
+    <div class="durum" id="kesfetDurum"></div>
+    <div class="grid" id="kesfetListe"></div>
+  </div>
+</div>
+
+<!-- YouTube çerez modalı (secret'sız) -->
+<div id="cerezModal" class="gizli">
+  <div class="modal-kart">
+    <h3 style="color:var(--youtube)">🎬 YouTube Music — Bağlan</h3>
+    <p><b>Eklenti otomatik okur — çerez kopyalama gerekmez.</b></p>
+    <p style="margin-top:8px">1. Chrome araç çubuğundaki <b>PopGün Köprüsü</b> simgesine tıkla (açık değilse chrome://extensions'dan eklentiyi etkinleştir).<br>
+    2. Açılan açılır menüde <b>YouTube Music'i bağla</b>'ya bas. Eklenti, açık YT Music oturumunun çerezlerini otomatik alır.<br>
+    3. Buraya dönüp <b>🔄 Yenile</b>'ye bas.</p>
+    <p style="margin-top:10px;color:var(--text2);font-size:0.78em">Eklenti yoksa çerez elle kopyalanabilir (yalnızca ikincil yol):</p>
+    <p style="margin-top:4px;font-size:0.82em">1. <a href="https://music.youtube.com" target="_blank" rel="noopener" style="color:var(--youtube)">music.youtube.com</a>'da oturum aç.<br>
+    2. <b>F12</b> (DevTools) → <b>Application / Uygulama</b> → <b>Cookies</b> → <b>https://music.youtube.com</b>.<br>
+    3. Aşağıdaki kutuya <code>ad=deger; ad2=deger2; ...</code> biçiminde yapıştır (şu adlar: <b>__Secure-3PAPISID</b>, <b>__Secure-3PSID</b>, <b>SID</b>).</p>
+    <textarea id="cerezKutu" rows="5" style="width:100%;margin-top:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:0.85em" placeholder="__Secure-3PAPISID=...; __Secure-3PSID=...; SID=..."></textarea>
+    <p id="cerezDur" style="color:var(--orange);font-size:0.8em;min-height:20px"></p>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="cerezGonder()" style="background:var(--youtube);color:#fff;flex:1">Eklenti Yoksa — Çerezle Bağla</button>
+      <button onclick="cerezModalGizle()">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- Spotify çerez modalı (secret'sız) -->
+<div id="spCerezModal" class="gizli">
+  <div class="modal-kart">
+    <h3 style="color:var(--spotify)">🟢 Spotify — Bağlan</h3>
+    <p><b>Eklenti otomatik okur — çerez kopyalama gerekmez.</b></p>
+    <p style="margin-top:8px">1. Chrome araç çubuğundaki <b>PopGün Köprüsü</b> simgesine tıkla (açık değilse chrome://extensions'dan eklentiyi etkinleştir).<br>
+    2. Açılan açılır menüde <b>Spotify'ı bağla</b>'ya bas. Eklenti, açık Spotify oturumunun <b>sp_dc</b> çerezini otomatik alıp yerel uygulamaya iletir.<br>
+    3. Buraya dönüp <b>🔄 Yenile</b>'ye bas.</p>
+    <p style="margin-top:10px;color:var(--text2);font-size:0.78em">Eklenti yoksa çerez elle kopyalanabilir (yalnızca ikincil yol):</p>
+    <p style="margin-top:4px;font-size:0.82em">1. <a href="https://open.spotify.com" target="_blank" rel="noopener" style="color:var(--spotify)">open.spotify.com</a>'da oturum aç.<br>
+    2. <b>F12</b> (DevTools) → <b>Application / Uygulama</b> → <b>Cookies</b> → <b>https://open.spotify.com</b>.<br>
+    3. <b>sp_dc</b> çerezinin <b>Value</b> sütununu kopyala (adını veya <code>=</code> işaretini değil).</p>
+    <textarea id="spCerezKutu" rows="3" style="width:100%;margin-top:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:0.85em" placeholder="sp_dc değeri..."></textarea>
+    <p id="spCerezDur" style="color:var(--orange);font-size:0.8em;min-height:20px"></p>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="spCerezGonder()" style="background:var(--spotify);color:#fff;flex:1">Eklenti Yoksa — Çerezle Bağla</button>
+      <button onclick="spCerezModalGizle()">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- YouTube onay modali -->
+<div id="ytModal" class="gizli">
+  <div class="modal-kart">
+    <h3 style="color:var(--youtube)">🎬 YouTube Music — Onay</h3>
+    <p>1. Aşağıdaki onay sayfasını açıp Google hesabınla giriş yap:</p>
+    <a id="ytUrl" href="#" target="_blank" rel="noopener">Onay sayfasını aç</a>
+    <p>2. Sayfaya girilecek kod:</p>
+    <div class="kod"><span id="ytKod"></span> <button onclick="kopyala()">Kopyala</button></div>
+    <p id="ytDur">Onay bekleniyor — otomatik kontrol ediliyor...</p>
+    <button onclick="sekmeGizle()" style="margin-top:10px">Kapat</button>
+  </div>
+</div>
+
+<!-- Oynatıcı -->
+<div id="oynatici">
+  <div class="oyn-ust">
+    <div class="oyn-alan" id="oynAlan"><div class="bos">🎵</div></div>
+    <div class="oyn-bilgi">
+      <div class="sarkı" id="oynSarki">—</div>
+      <div class="sanatci" id="oynSanatci">—</div>
+      <div class="aciklama" id="oynAciklama"></div>
+    </div>
+    <div class="oyn-kontroller">
+      <button class="btn btn-sonraki" onclick="sonraki(true)">⏭ Sıradaki</button>
+      <button class="btn btn-durak" onclick="dur(); kapatOy()">✕ Kapat</button>
+    </div>
+  </div>
+  <div class="oyn-kuyruk" id="oynKuyruk"></div>
+</div>
+
+<script>
+var MOOD_AD = {};
+var BEGENILER = {tracks: [], moods: {}};
+var seciliMood = null;
+
+/* ================= Bağlantı durumu ================= */
+function durumGuncelle(d){
+  var sp = d.spotify, yt = d.youtube;
+  var br = d.bridge || {};
+  var kop = document.getElementById("kopruDurum");
+  if(br.active){
+    var par = [];
+    if(br.spotify) par.push("Spotify köprü");
+    if(br.youtube) par.push("YouTube köprü");
+    kop.innerHTML = '<span class="nokta" style="background:#1db954"></span>🔌 Köprü aktif: ' + (par.join(", ") || "bağlantı bekliyor");
+  } else {
+    kop.innerHTML = '<span class="nokta" style="background:#555"></span>Köprü eklentisi algılanmadı — kurulum adımları yukarıda';
+  }
+  var spEl = document.getElementById("spDurum"), spN = document.getElementById("spNokta");
+  if(sp.connected){
+    spN.style.background = "#1db954";
+    var mod = sp.method === "oauth" ? " (OAuth)" : (sp.method === "cookie" ? " (çerez)" : "");
+    spEl.innerHTML = '<span class="nokta" style="background:#1db954"></span>Bağlı: ' + (sp.user ? sp.user.name : "?") + mod;
+    var b = document.getElementById("spBtn"); b.textContent = "Çıkış"; b.className = "btn kop";
+  } else {
+    spN.style.background = "#555";
+    var mesaj = sp.error || "Bağlı değil";
+    if(!sp.configured) mesaj = "🔌 Eklenti ile bağlan — secret yok";
+    spEl.innerHTML = '<span class="nokta" style="background:#555"></span>' + html(mesaj);
+    var b = document.getElementById("spBtn"); b.textContent = "Bağlan"; b.className = "btn";
+  }
+  var ytEl = document.getElementById("ytDurum");
+  if(yt.connected){
+    var mod = yt.browser_mode ? " (çerez)" : (yt.oauth_mode ? " (OAuth)" : "");
+    ytEl.innerHTML = '<span class="nokta" style="background:#ff4e45"></span>Bağlı' + mod;
+    var b = document.getElementById("ytBtn"); b.textContent = "Çıkış"; b.className = "btn kop";
+  } else if(yt.connecting || sekmeGosterili){
+    ytEl.innerHTML = '<span class="nokta" style="background:#fdcb6e"></span>Google onayı bekleniyor (açılan kutu)...';
+    var b = document.getElementById("ytBtn"); b.textContent = "Bağlan"; b.className = "btn";
+  } else {
+    var mesaj = yt.error ? ("Hata: " + yt.error)
+      : (yt.available ? (yt.creds_ok ? "Bağlı değil" : "🔌 Eklenti ile bağlan — secret gerekmez") : "pip install ytmusicapi");
+    ytEl.innerHTML = '<span class="nokta" style="background:#555"></span>' + html(mesaj);
+    var b = document.getElementById("ytBtn"); b.textContent = "Bağlan"; b.className = "btn";
+  }
+}
+function baglaSpotify(){
+  var b = document.getElementById("spBtn");
+  if(b.textContent === "Çıkış"){ fetch("/api/disconnect/spotify").then(function(){ yenile(); }); return; }
+  fetch("/api/status").then(function(r){ return r.json(); }).then(function(d){
+    if(d.spotify && d.spotify.configured){
+      fetch("/api/connect/spotify").then(function(r){ return r.json(); }).then(function(d2){
+        if(!d2.ok){ document.getElementById("durum").textContent = "⚠ " + d2.hata; return; }
+        var w = window.open(d2.redirect, "_blank", "width=520,height=680,popup=yes");
+        if(!w){ window.location.href = d2.redirect; }   // popup engellenirse ayni sekmede
+        else { setTimeout(yenile, 3000); }
+      });
+    } else {
+      kopruYonlendir("spotify");   // eklenti otomatik okur — manuel çerez gerekmez
+    }
+  }).catch(function(e){ document.getElementById("durum").textContent = "Hata: " + e.message; });
+}
+var sekmeGosterili = false, ytSaat = null;
+function baglaYoutube(){
+  var b = document.getElementById("ytBtn");
+  if(b.textContent === "Çıkış"){
+    fetch("/api/disconnect/youtube").then(function(){ yenile(); }); return;
+  }
+  fetch("/api/youtube/browser").then(function(r){ return r.json(); }).then(function(yt){
+    if(yt.creds_ok){
+      fetch("/api/youtube/start", {method: "POST"}).then(function(r){ return r.json(); }).then(function(d){
+        if(d.done){ begendikleriniYukle(); return; }
+        if(!d.ok){ document.getElementById("durum").textContent = "⚠ " + (d.error || "Başlatılamadı"); return; }
+        sekmeGoster(d.verification_url, d.user_code);
+        ytYokla();
+      });
+    } else {
+      kopruYonlendir("youtube");   // eklenti otomatik okur — manuel çerez gerekmez
+    }
+  }).catch(function(e){ document.getElementById("durum").textContent = "Hata: " + e.message; });
+}
+function ytYokla(){
+  clearInterval(ytSaat);
+  ytSaat = setInterval(function(){
+    fetch("/api/youtube/poll").then(function(r){ return r.json(); }).then(function(d){
+      if(d.done){ clearInterval(ytSaat); sekmeGizle(); begendikleriniYukle(); }
+      else if(d.error){ clearInterval(ytSaat); sekmeGizle(); document.getElementById("durum").textContent = "⚠ " + d.error; }
+      else { var a = document.getElementById("ytDur"); if(a) a.textContent = "Onay bekleniyor — otomatik kontrol sürüyor..."; }
+    }).catch(function(){});
+  }, 4000);
+}
+function cerezModalGoster(){
+  document.getElementById("cerezModal").classList.remove("gizli");
+  document.getElementById("cerezDur").textContent = "";
+}
+function cerezModalGizle(){
+  document.getElementById("cerezModal").classList.add("gizli");
+}
+function cerezGonder(){
+  var ta = document.getElementById("cerezKutu");
+  var dur = document.getElementById("cerezDur");
+  dur.textContent = "Doğrulanıyor...";
+  fetch("/api/youtube/browser", {method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({cookie: ta.value.trim()})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if(d.ok){ cerezModalGizle(); begendikleriniYukle(); document.getElementById("durum").textContent = "✅ YouTube Music çerezle bağlandı."; }
+    else { dur.textContent = "⚠ " + (d.error || "Bağlanamadı"); }
+  }).catch(function(e){ dur.textContent = "Hata: " + e.message; });
+}
+function spCerezModalGoster(){
+  document.getElementById("spCerezModal").classList.remove("gizli");
+  document.getElementById("spCerezDur").textContent = "";
+}
+function spCerezModalGizle(){
+  document.getElementById("spCerezModal").classList.add("gizli");
+}
+function kopruYonlendir(kaynak){
+  var modal = kaynak === "spotify" ? "spCerezModal" : "cerezModal";
+  document.getElementById(modal).classList.remove("gizli");
+  if(kaynak === "spotify"){ document.getElementById("spCerezDur").textContent = ""; }
+  else { document.getElementById("cerezDur").textContent = ""; }
+}
+function spCerezGonder(){
+  var ta = document.getElementById("spCerezKutu");
+  var dur = document.getElementById("spCerezDur");
+  dur.textContent = "Bağlanıyor...";
+  fetch("/api/spotify/cookie", {method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({cookie: ta.value.trim()})
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if(d.ok){ spCerezModalGizle(); document.getElementById("durum").textContent = "✅ Spotify çerezle bağlandı."; begendikleriniYukle(); }
+    else { dur.textContent = "⚠ " + (d.error || "Bağlanamadı"); }
+  }).catch(function(e){ dur.textContent = "Hata: " + e.message; });
+}
+function sekmeGoster(url, kod){
+  sekmeGosterili = true;
+  document.getElementById("ytUrl").href = url;
+  document.getElementById("ytUrl").textContent = url;
+  document.getElementById("ytKod").textContent = kod;
+  document.getElementById("ytModal").classList.remove("gizli");
+}
+function sekmeGizle(){
+  sekmeGosterili = false;
+  clearInterval(ytSaat);
+  document.getElementById("ytModal").classList.add("gizli");
+}
+function kopyala(){
+  var kod = document.getElementById("ytKod").textContent;
+  navigator.clipboard && navigator.clipboard.writeText(kod).then(function(){
+    var b = event.target; b.textContent = "Kopyalandı ✓"; setTimeout(function(){ b.textContent = "Kopyala"; }, 1200);
+  }).catch(function(){ document.getElementById("ytDur").textContent = "Kodu elle yazın: " + kod; });
+}
+
+/* ================= Beğendiklerim ================= */
+function begendikleriniYukle(){
+  var durum = document.getElementById("durum");
+  durum.textContent = "♥ Beğeniler getiriliyor...";
+  fetch("/api/liked").then(function(r){ return r.json(); }).then(function(d){
+    BEGENILER = d;
+    var toplam = d.tracks.length;
+    durum.textContent = toplam === 0
+      ? "Beğeni bulunamadı — bir servise bağlan veya Spotify/YT Music'te şarkı beğen."
+      : "♥ " + toplam + " beğenilen şarkı, " + Object.keys(d.moods).length + " mood'a kümelendi.";
+    moodCipleriGoster();
+  }).catch(function(e){ durum.textContent = "Hata: " + e.message; });
+}
+function moodCipleriGoster(){
+  var kapsa = document.getElementById("moodlar");
+  var html = "";
+  var sira = Object.keys(BEGENILER.moods);
+  sira.forEach(function(m){
+    var meta = MOOD_AD[m] || {label: (m === "karisik" ? "Karışık" : m), icon: "🎚"};
+    html += '<div class="mood' + (seciliMood === m ? " active" : "") + '" onclick="moodSec(\'' + m + '\')">' +
+      '<span class="kapat" onclick="event.stopPropagation(); moodSec(null)" title="Kapat">✕</span>' +
+      '<span class="icon">' + meta.icon + '</span>' +
+      '<div class="name">' + meta.label + '</div>' +
+      '<div class="adet">' + BEGENILER.moods[m].count + ' şarkı</div></div>';
+  });
+  kapsa.innerHTML = html || '<div class="bos-kutu" style="grid-column:1/-1">Henüz mood yok.</div>';
+}
+function moodSec(m){
+  seciliMood = m;
+  moodCipleriGoster();
+  var kapsa = document.getElementById("moodDetay");
+  if(!m){ kapsa.innerHTML = ""; return; }
+  var meta = MOOD_AD[m] || {label: m, icon: "🎚"};
+  var parcalar = BEGENILER.tracks.filter(function(p){ return (p.mood || "karisik") === m; });
+  kapsa.innerHTML =
+    '<div class="govde" style="margin-bottom:10px">' +
+      '<h3 style="font-size:1.05em">' + meta.icon + ' ' + meta.label + ' — ' + parcalar.length + ' şarkı</h3>' +
+      '<button class="btn btn-oynat" onclick="calMoodRadyo(\'' + m + '\')">▶ Çal — beğendiklerim → sonra radyo</button>' +
+      '<button class="btn btn-radio" onclick="calSadeceRadyo(\'' + m + '\')">📻 Sadece radyo</button>' +
+    '</div>' +
+    '<div class="grid">' + parcalar.map(kart).join("") + '</div>';
+}
+
+/* ================= Keşfet ================= */
+var KESFET_MOODS = [
+  {k:"spor", icon:"🏃", name:"Spor", desc:"hızlı & enerjik"},
+  {k:"eglen", icon:"🕺", name:"Eğlen", desc:"dans & ritim"},
+  {k:"calisma", icon:"💻", name:"Çalışma", desc:"odak & tempo"},
+  {k:"chill", icon:"☕", name:"Chill", desc:"rahat & keyif"},
+  {k:"uyku", icon:"😴", name:"Uyku", desc:"yavaş & sakin"}
+];
+document.getElementById("kesfetMoods").innerHTML = KESFET_MOODS.map(function(m){
+  return '<div class="mood" onclick="kesfetYukle(\'' + m.k + '\')">' +
+    '<span class="icon">' + m.icon + '</span><div class="name">' + m.name + '</div>' +
+    '<div class="adet">' + m.desc + '</div></div>';
+}).join("");
+function kesfetYukle(mood){
+  var durum = document.getElementById("kesfetDurum");
+  durum.textContent = "🔍 Pop parçalar aranıyor...";
+  document.getElementById("kesfetListe").innerHTML = '<div class="bos-kutu" style="grid-column:1/-1">Yükleniyor...</div>';
+  fetch("/api/playlist?mood=" + mood).then(function(r){ return r.json(); }).then(function(d){
+    durum.textContent = d.demo
+      ? "⚠ Canlı Spotify verisi yok (demo listesi). config.json kontrol edin."
+      : "✓ " + d.total + " parça bulundu.";
+    document.getElementById("kesfetListe").innerHTML = d.tracks.map(kart).join("");
+  }).catch(function(e){ durum.textContent = "Hata: " + e.message; });
+}
+
+/* ================= Kart ================= */
+function kart(p){
+  var im = p.image ? '<img src="' + p.image + '" alt="">' : '<span>' + (p.provider === "youtube" ? "▶️" : "🎵") + '</span>';
+  var meta = "";
+  if(p.tempo) meta = '<div class="meta">🎵 ' + p.tempo + ' BPM · ⚡ %' + Math.round((p.energy||0)*100) + ' enerji · 🕺 %' + Math.round((p.danceability||0)*100) + ' dans</div>';
+  return '<div class="card">' +
+    '<div class="img">' + im + '</div>' +
+    '<div class="body">' +
+      '<div class="title">' + html(p.name) + '</div>' +
+      '<div class="artist">' + html(p.artist || "") + '</div>' +
+      meta +
+      '<div><span class="kaynak ' + (p.provider || "") + '">' + (p.provider === "youtube" ? "YouTube Music" : "Spotify") + '</span></div>' +
+      '<button class="btn btn-oynat" style="display:inline-block;margin-top:10px" onclick="tekilCal(' + JSON.stringify({provider:p.provider,id:p.id,name:p.name,artist:p.artist||"",preview_url:p.preview_url||"",url:p.url||"",image:p.image||""}).replace(/"/g,"&quot;") + ')">▶ Çal</button>' +
+      (p.url ? '<a class="btn btn-kop" style="display:inline-block;margin-top:10px;text-decoration:none" target="_blank" href="' + p.url + '">Aç</a>' : '') +
+    '</div></div>';
+}
+function html(s){ return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* ================= Oynatıcı ================= */
+var SIra = [], SIraI = -1, radyoMood = null, rtPlayer = null, spAudio = null, radyoBekliyor = false;
+var ytHazir = false, ytPlayer = null;
+
+function ytApiYukle(){
+  if (window.YT && window.YT.Player) { ytHazir = true; return; }
+  var s = document.createElement("script");
+  s.src = "https://www.youtube.com/iframe_api";
+  s.onload = function(){ /* API hazır olmus sayilir */ };
+  document.head.appendChild(s);
+}
+window.onYouTubeIframeAPIReady = function(){ ytHazir = true; };
+
+function ekeEkle(item){
+  SIra.push(item); kuyrukGoster();
+}
+function kuyrukGoster(){
+  document.getElementById("oynKuyruk").innerHTML = SIra.map(function(i, n){
+    return '<span class="kuyruk-item' + (n === SIraI ? " aktif" : "") + '" onclick="oynatIndex(' + n + ')">' +
+      html(i.name) + '</span>';
+  }).join("");
+}
+function oynatIndex(n){
+  if(n < 0 || n >= SIra.length) return;
+  radyoBekliyor = false;
+  SIraI = n; kuyrukGoster();
+  var item = SIra[n];
+  document.getElementById("oynSarki").textContent = item.name;
+  document.getElementById("oynSanatci").textContent = item.artist;
+  document.getElementById("oynAciklama").textContent =
+    (radyoMood ? "🎚 " + (MOOD_AD[radyoMood] ? MOOD_AD[radyoMood].label : radyoMood) + " radyo · " : "Beğendiklerin · ") +
+    (n + 1) + "/" + SIra.length + " (beğendiğin → radyo)";
+  var alan = document.getElementById("oynAlan");
+  alan.innerHTML = "";
+  if(spAudio){ spAudio.pause(); spAudio = null; }
+
+  if(item.provider === "youtube"){
+    if(!ytHazir) ytApiYukle();
+    var div = document.createElement("div");
+    alan.appendChild(div);
+    if(ytPlayer){
+      ytPlayer.loadVideoById(item.id);
+    } else if(ytHazir){
+      ytPlayer = new YT.Player(div, {
+        videoId: item.id,
+        width: "100%", height: "100%",
+        playerVars: {autoplay: 1, playsinline: 1},
+        events: {onStateChange: function(e){
+          if(e.data === YT.PlayerState.ENDED) sonraki(false);
+        }}
+      });
+    } else {
+      alan.innerHTML = '<div class="bos">▶️ YouTube yükleniyor... <button style="display:block;margin:10px auto" onclick="oynatIndex(n)">Tekrar dene</button></div>';
+    }
+  } else if(item.provider === "spotify"){
+    if(item.preview_url){
+      var audio = document.createElement("audio");
+      audio.src = item.preview_url; audio.autoplay = true; audio.controls = true;
+      audio.onended = function(){ sonraki(false); };
+      audio.onplay = function(){ spAudio = audio; };
+      alan.appendChild(audio);
+      alan.querySelector("audio").play().catch(function(){});
+    } else {
+      var ifr = document.createElement("iframe");
+      ifr.src = "https://open.spotify.com/embed/track/" + item.id;
+      ifr.setAttribute("allow", "encrypted-media");
+      ifr.setAttribute("allowfullscreen", "allowfullscreen");
+      ifr.style.border = "0";
+      alan.appendChild(ifr);
+      document.getElementById("oynAciklama").textContent += " · [Spotify embed — bitince Sıradaki'ye bas]";
+    }
+  }
+}
+function sonraki(){
+  if(SIraI + 1 < SIra.length){ oynatIndex(SIraI + 1); return; }
+  if(radyoMood){
+    radyoBekliyor = true;
+    dur();
+    document.getElementById("oynAciklama").textContent = "Radyo yüklenince otomatik başlayacak...";
+  }
+}
+function dur(){ if(rtPlayer && rtPlayer.stopVideo) rtPlayer.stopVideo(); if(spAudio) spAudio.pause(); }
+function kapatOy(){ document.getElementById("oynatici").classList.remove("acik"); dur(); }
+
+/* Beğenileri çal: önce beğendiği şarkılar, bittiğinde o şarkılardan radyo */
+function calMoodRadyo(m){
+  var parcalar = BEGENILER.tracks.filter(function(p){ return (p.mood || "karisik") === m; });
+  if(parcalar.length === 0){ document.getElementById("durum").textContent = "Bu moodda şarkı yok."; return; }
+  radyoMood = m;
+  SIra = parcalar.map(oynatilabilir).filter(Boolean);
+  SIraI = -1;
+  document.getElementById("oynatici").classList.add("acik");
+  durumOynInfo("Beğendiklerin çalınıyor, bitince radyo...");
+  oynatIndex(0);
+  /* kuyruk sonuna radyoyu bekleme davranısı: radyo yukle */
+  radyoSonrayaEkle(m, true);
+}
+function calSadeceRadyo(m){
+  radyoMood = m;
+  document.getElementById("oynatici").classList.add("acik");
+  durumOynInfo("Radyo yükleniyor...");
+  radyoSonrayaEkle(m, false);
+}
+function radyoSonrayaEkle(m, begeniOnde){
+  fetch("/api/radio?mood=" + m).then(function(r){ return r.json(); }).then(function(d){
+    if(d.tracks.length === 0){ durumOynInfo("Radyo boş geldi. Sonuna gelindi."); return; }
+    radyoMood = m;
+    var radyo = d.tracks.map(oynatilabilir).filter(Boolean);
+    if(begeniOnde){
+      SIra = SIra.concat(radyo);
+      if(radyoBekliyor){ radyoBekliyor = false; oynatIndex(SIraI + 1); }
+    } else {
+      SIra = radyo; SIraI = -1; oynatIndex(0);
+    }
+    kuyrukGoster();
+  }).catch(function(e){ durumOynInfo("Radyo hatası: " + e.message); });
+}
+function oynatilabilir(p){
+  if(p.provider === "youtube" && p.id) return {provider:"youtube", id:p.id, name:p.name, artist:p.artist||"", url:p.url||"", image:p.image||""};
+  if(p.provider === "spotify" && p.id) return {provider:"spotify", id:p.id, name:p.name, artist:p.artist||"", url:p.url||"", preview_url:p.preview_url||"", image:p.image||""};
+  return null;
+}
+function tekilCal(item){
+  radyoMood = null;
+  SIra = [item]; SIraI = -1;
+  document.getElementById("oynatici").classList.add("acik");
+  durumOynInfo("Tek şarkı");
+  oynatIndex(0);
+}
+function durumOynInfo(s){
+  var d = document.getElementById("oynAciklama");
+  d.textContent = (radyoMood ? "🎚 " + (MOOD_AD[radyoMood] ? MOOD_AD[radyoMood].label : radyoMood) + " · " : "") + s;
+}
+
+/* ================= Sekmeler ================= */
+function tabAc(t){
+  document.getElementById("tab-begen").classList.toggle("active", t === "begen");
+  document.getElementById("tab-kesfet").classList.toggle("active", t === "kesfet");
+  document.getElementById("govde-begen").classList.toggle("gizli", t !== "begen");
+  document.getElementById("govde-kesfet").classList.toggle("gizli", t !== "kesfet");
+  if(t === "begen") begendikleriniYukle();
+  else kesfetYukle("spor");
+}
+
+/* ================= Başlat ================= */
+var onceYT = {connecting: false, connected: false};
+var onceSP = false;
+function durumYokla(){
+  fetch("/api/status").then(function(r){ return r.json(); }).then(function(d){
+    MOOD_AD = d.moods || {};
+    durumGuncelle(d);
+    var yt = d.youtube || {};
+    var sp = !!(d.spotify && d.spotify.connected);
+    var degisti = (yt.connecting || yt.connected) !== (onceYT.connecting || onceYT.connected) || sp !== onceSP;
+    if(degisti && (sp || yt.connected)){ begendikleriniYukle(); }
+    onceYT.connected = yt.connected; onceYT.connecting = yt.connecting;
+    onceSP = sp;
+  }).catch(function(){});
+}
+function yenile(){
+  fetch("/api/status").then(function(r){ return r.json(); }).then(function(d){
+    MOOD_AD = d.moods || {};
+    durumGuncelle(d);
+    onceYT.connected = !!(d.youtube && d.youtube.connected);
+    onceYT.connecting = !!(d.youtube && d.youtube.connecting);
+  }).catch(function(e){ document.getElementById("durum").textContent = "Hata: " + e.message; });
+  begendikleriniYukle();
+  kesfetYukle("spor");
+}
+setInterval(durumYokla, 4000);
+yenile();
+</script>
+</body>
+</html>
